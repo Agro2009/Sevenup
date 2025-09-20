@@ -1,0 +1,115 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Orders - Iron Sight Armory</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="{{ url_for('static', filename='logo_alt.png') }}" alt="Iron Sight Armory Logo" class="logo">
+                    <div class="brand-text">
+                        <h1>Iron Sight Armory</h1>
+                        <p class="tagline">Customer Order History</p>
+                    </div>
+                </div>
+                <nav class="header-nav">
+                    <a href="{{ url_for('index') }}" class="nav-link">← Back to Shop</a>
+                    <a href="{{ url_for('customer_logout') }}" class="nav-link">Logout</a>
+                    <a href="https://discord.gg/6wpgXJAkcv" target="_blank" class="nav-link" style="background: #7289da; border-color: #7289da;">💬 Discord</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Vacancy Advertisement -->
+        {% if vacancy_settings.enabled %}
+        <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 15px; text-align: center; border-radius: 8px; margin-bottom: 2rem; box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);">
+            <h3 style="margin: 0; font-size: 1.2rem;">{{ vacancy_settings.title }}</h3>
+            <p style="margin: 5px 0; font-size: 1rem;">{{ vacancy_settings.description }}: <strong>{{ vacancy_settings.contact_info }}</strong></p>
+        </div>
+        {% endif %}
+
+        <section class="orders-section">
+            <div class="section-header">
+                <h2>📋 My Orders</h2>
+                <div class="admin-actions">
+                    <span class="nav-link" style="background: rgba(39, 174, 96, 0.2); border: 1px solid #27ae60;">👤 {{ session.customer_discord_id }}</span>
+                </div>
+            </div>
+
+            {% if orders %}
+            <div class="orders-table-container">
+                <table class="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Quantity</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr class="order-row">
+                            <td class="order-id">#{{ order.id }}</td>
+                            <td class="product-name">{{ order.product_name }}</td>
+                            <td class="category-name">{{ order.category }}</td>
+                            <td class="quantity">{{ order.quantity }}</td>
+                            <td class="total">${{ "{:,.2f}".format(order.total) }}</td>
+                            <td>
+                                <span class="status-badge status-{{ order.status }}">
+                                    {{ order.status.upper() }}
+                                </span>
+                            </td>
+                            <td class="timestamp">{{ order.timestamp }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">🛒</div>
+                <h3>No Orders Yet</h3>
+                <p>You haven't placed any orders yet. Browse our equipment to get started!</p>
+                <a href="{{ url_for('index') }}" class="btn-primary">Browse Equipment</a>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Iron Sight Armory</h4>
+                    <p>Elite Military Equipment Supplier</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Iron Sight Armory. Customer order history.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

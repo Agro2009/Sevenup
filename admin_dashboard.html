@@ -1,0 +1,241 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Iron Sight Armory</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .dashboard-card {
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+            transition: transform 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .dashboard-card h3 {
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+        
+        .stat-number {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        .stat-revenue .stat-number {
+            color: #27ae60;
+        }
+        
+        .stat-customers .stat-number {
+            color: #3498db;
+        }
+        
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 3rem;
+        }
+        
+        .action-btn {
+            padding: 15px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+        }
+        
+        .action-btn.orders { background: linear-gradient(135deg, #e74c3c, #c0392b); }
+        .action-btn.vacancy { background: linear-gradient(135deg, #f39c12, #e67e22); }
+        .action-btn.customers { background: linear-gradient(135deg, #9b59b6, #8e44ad); }
+        
+        .recent-orders {
+            background: linear-gradient(135deg, #fff, #f8f9fa);
+            padding: 2rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: 1px solid #e9ecef;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.3s;
+        }
+        
+        .order-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .order-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="{{ url_for('static', filename='logo_alt.png') }}" alt="Iron Sight Armory Logo" class="logo">
+                    <div class="brand-text">
+                        <h1>Iron Sight Armory</h1>
+                        <p class="tagline">Admin Dashboard</p>
+                    </div>
+                </div>
+                <nav class="header-nav">
+                    <a href="{{ url_for('welcome') }}" class="nav-link">← Back to Home</a>
+                    <a href="{{ url_for('view_orders') }}" class="nav-link">View Orders</a>
+                    <a href="{{ url_for('admin_logout') }}" class="nav-link">Logout</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="admin-welcome" style="text-align: center; margin-bottom: 3rem;">
+            <h2 style="color: #2c3e50; font-size: 2.5rem; margin-bottom: 1rem;">Welcome to Admin Dashboard</h2>
+            <p style="color: #666; font-size: 1.2rem;">Manage your Iron Sight Armory operations from here</p>
+        </section>
+
+        <section class="dashboard-overview">
+            <h3 style="color: #2c3e50; margin-bottom: 2rem; font-size: 1.8rem;">📊 Business Overview</h3>
+            
+            <div class="dashboard-grid">
+                <div class="dashboard-card stat-orders">
+                    <h3>Total Orders</h3>
+                    <span class="stat-number">{{ stats.total_orders }}</span>
+                    <p style="color: #666;">All time orders</p>
+                </div>
+                
+                <div class="dashboard-card stat-pending">
+                    <h3>Pending Orders</h3>
+                    <span class="stat-number" style="color: #f39c12;">{{ stats.pending_orders }}</span>
+                    <p style="color: #666;">Awaiting approval</p>
+                </div>
+                
+                <div class="dashboard-card stat-revenue">
+                    <h3>Revenue</h3>
+                    <span class="stat-number">${{ "{:,.0f}".format(stats.total_revenue) }}</span>
+                    <p style="color: #666;">From confirmed orders</p>
+                </div>
+                
+                <div class="dashboard-card stat-customers">
+                    <h3>Customers</h3>
+                    <span class="stat-number">{{ stats.total_customers }}</span>
+                    <p style="color: #666;">Registered users</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="quick-actions-section">
+            <h3 style="color: #2c3e50; margin-bottom: 2rem; font-size: 1.8rem;">🚀 Quick Actions</h3>
+            
+            <div class="quick-actions">
+                <a href="{{ url_for('view_orders') }}" class="action-btn orders">
+                    📋 Manage Orders
+                </a>
+                <a href="{{ url_for('manage_vacancy') }}" class="action-btn vacancy">
+                    📢 Edit Vacancy
+                </a>
+                <a href="{{ url_for('customer_register') }}" class="action-btn customers">
+                    👥 Add Customer
+                </a>
+                <a href="{{ url_for('index') }}" class="action-btn">
+                    🛒 View Shop
+                </a>
+            </div>
+        </section>
+
+        {% if stats.recent_orders %}
+        <section class="recent-orders-section">
+            <h3 style="color: #2c3e50; margin-bottom: 2rem; font-size: 1.8rem;">📝 Recent Orders</h3>
+            
+            <div class="recent-orders">
+                {% for order in stats.recent_orders %}
+                <div class="order-item">
+                    <div>
+                        <strong>Order #{{ order.id }}</strong> - {{ order.customer_roleplay_is }}<br>
+                        <small style="color: #666;">{{ order.product_name }} (x{{ order.quantity }})</small>
+                    </div>
+                    <div style="text-align: right;">
+                        <div class="status-badge status-{{ order.status }}">{{ order.status.upper() }}</div>
+                        <small style="color: #666; display: block; margin-top: 5px;">${{ "{:,.2f}".format(order.total) }}</small>
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <div style="text-align: center; margin-top: 1rem;">
+                    <a href="{{ url_for('view_orders') }}" class="btn-primary">View All Orders</a>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <div class="discord-section" style="text-align: center; margin-top: 3rem;">
+            <a href="https://discord.gg/6wpgXJAkcv" target="_blank" class="discord-btn" style="display: inline-flex; align-items: center; gap: 10px; background: #7289da; color: white; padding: 15px 25px; border-radius: 50px; text-decoration: none; font-weight: 600; box-shadow: 0 10px 30px rgba(114, 137, 218, 0.3); transition: all 0.3s ease;">
+                <span style="font-size: 1.5rem;">💬</span>
+                <span>Contact Support on Discord</span>
+            </a>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Iron Sight Armory</h4>
+                    <p>Elite Military Equipment Supplier</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Iron Sight Armory. Admin Dashboard.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

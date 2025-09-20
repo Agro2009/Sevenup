@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iron Sight Armory - Premium Military Equipment</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="{{ url_for('static', filename='logo_alt.png') }}" alt="Iron Sight Armory Logo" class="logo">
+                    <div class="brand-text">
+                        <h1>Iron Sight Armory</h1>
+                        <p class="tagline">Elite Military Equipment & Tactical Solutions</p>
+                    </div>
+                </div>
+                <nav class="header-nav">
+                    <a href="{{ url_for('welcome') }}" class="nav-link">← Home</a>
+                    {% if session.customer_logged_in %}
+                        <span class="nav-link" style="background: rgba(39, 174, 96, 0.2); border: 1px solid #27ae60;">👤 {{ session.customer_discord_id }}</span>
+                        <a href="{{ url_for('customer_orders') }}" class="nav-link">My Orders</a>
+                        <a href="/customer/logout" class="nav-link">Logout</a>
+                    {% else %}
+                        <a href="/customer/login" class="nav-link">Customer Login</a>
+                        <a href="/customer/register" class="nav-link">Create Account</a>
+                    {% endif %}
+                    {% if session.admin_logged_in %}
+                        <a href="{{ url_for('admin_dashboard') }}" class="nav-link">Admin Panel</a>
+                        <a href="/admin/logout" class="nav-link">Admin Logout</a>
+                    {% else %}
+                        <a href="/admin/login" class="nav-link">Admin Login</a>
+                    {% endif %}
+                    <a href="https://discord.gg/6wpgXJAkcv" target="_blank" class="nav-link" style="background: #7289da; border-color: #7289da;">💬 Discord</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Vacancy Advertisement -->
+        {% if vacancy_settings.enabled %}
+        <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 15px; text-align: center; border-radius: 8px; margin-bottom: 2rem; box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);">
+            <h3 style="margin: 0; font-size: 1.2rem;">{{ vacancy_settings.title }}</h3>
+            <p style="margin: 5px 0; font-size: 1rem;">{{ vacancy_settings.description }}: <strong>{{ vacancy_settings.contact_info }}</strong></p>
+            {% if vacancy_settings.image_url %}
+            <img src="{{ vacancy_settings.image_url }}" alt="Vacancy" style="max-width: 200px; border-radius: 10px; margin-top: 10px;">
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Enhanced Search Bar -->
+        <section class="search-section" style="background: linear-gradient(135deg, #0d1117, #161b22); padding: 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); margin-bottom: 2rem; border: 1px solid #30363d;">
+            <form action="/shop" method="GET" style="display: flex; gap: 1rem; align-items: center; max-width: 800px; margin: 0 auto; flex-wrap: wrap;">
+                <input type="text" name="search" value="{{ search_query or '' }}" 
+                       placeholder="🔍 Search weapons (M4A1, AK-74M, Barrett, MP5, Apache, F-35...)" 
+                       style="flex: 1; min-width: 300px; padding: 16px 24px; border: 2px solid #30363d; border-radius: 25px; font-size: 1.1rem; transition: border-color 0.3s; background: #0d1117; color: #f0f6fc;"
+                       list="all-weapons">
+                <datalist id="all-weapons">
+                    <!-- Rifles -->
+                    <option value="M4A1 Carbine">M4A1 Carbine - Assault Rifle</option>
+                    <option value="HK416">HK416 Assault Rifle</option>
+                    <option value="AK-74M">AK-74M - Russian Rifle</option>
+                    <option value="SCAR-L">FN SCAR-L Combat Rifle</option>
+                    <option value="Steyr AUG">Steyr AUG A3 Bullpup</option>
+                    <!-- SMGs -->
+                    <option value="MP5A5">MP5A5 - German SMG</option>
+                    <option value="UMP-45">UMP-45 Submachine Gun</option>
+                    <option value="P90">P90 TR Personal Defense Weapon</option>
+                    <option value="Kriss Vector">Kriss Vector SMG</option>
+                    <!-- Shotguns -->
+                    <option value="Benelli M4">Benelli M4 Super 90</option>
+                    <option value="Remington 870">Remington 870 MCS</option>
+                    <option value="Mossberg 590">Mossberg 590A1</option>
+                    <!-- Snipers -->
+                    <option value="Barrett M82A1">Barrett M82A1 .50 BMG</option>
+                    <option value="CheyTac M200">CheyTac M200 Long Range</option>
+                    <option value="AWM">Accuracy International AWM</option>
+                    <option value="M24 SWS">Remington M24 SWS</option>
+                    <!-- Vehicles -->
+                    <option value="M1A2 Abrams">M1A2 Abrams Tank</option>
+                    <option value="HMMWV">HMMWV Armored Vehicle</option>
+                    <option value="LAV-25">LAV-25 Armored Vehicle</option>
+                    <option value="Apache">AH-64 Apache Helicopter</option>
+                    <option value="Black Hawk">UH-60 Black Hawk</option>
+                    <option value="F-35">F-35 Lightning II Fighter</option>
+                    <option value="F-22">F-22 Raptor Fighter</option>
+                    <!-- Missiles -->
+                    <option value="Hellfire">Hellfire AGM-114 Missile</option>
+                    <option value="Tomahawk">Tomahawk Cruise Missile</option>
+                    <option value="Javelin">Javelin Anti-Tank Missile</option>
+                    <option value="Patriot">Patriot Missile System</option>
+                    <!-- Armor -->
+                    <option value="Level IV">Level IV Plate Carrier</option>
+                    <option value="Kevlar">Kevlar Helmet</option>
+                    <option value="EOD">EOD Bomb Suit</option>
+                </datalist>
+                <button type="submit" style="padding: 16px 32px; background: linear-gradient(135deg, #1f6feb, #388bfd); color: white; border: none; border-radius: 25px; font-weight: 600; cursor: pointer; transition: all 0.3s; font-size: 1.1rem; white-space: nowrap;">
+                    Search Arsenal
+                </button>
+            </form>
+            
+            <!-- Quick Filter Tags -->
+            <div style="display: flex; gap: 1rem; justify-content: center; margin-top: 1.5rem; flex-wrap: wrap;">
+                <a href="/shop?search=rifle" style="padding: 8px 16px; background: rgba(88, 166, 255, 0.2); color: #58a6ff; border: 1px solid #58a6ff; border-radius: 20px; text-decoration: none; font-size: 0.9rem; transition: all 0.3s;">🔫 Rifles</a>
+                <a href="/shop?search=tank" style="padding: 8px 16px; background: rgba(88, 166, 255, 0.2); color: #58a6ff; border: 1px solid #58a6ff; border-radius: 20px; text-decoration: none; font-size: 0.9rem; transition: all 0.3s;">🚗 Tanks</a>
+                <a href="/shop?search=helicopter" style="padding: 8px 16px; background: rgba(88, 166, 255, 0.2); color: #58a6ff; border: 1px solid #58a6ff; border-radius: 20px; text-decoration: none; font-size: 0.9rem; transition: all 0.3s;">🚁 Aircraft</a>
+                <a href="/shop?search=missile" style="padding: 8px 16px; background: rgba(88, 166, 255, 0.2); color: #58a6ff; border: 1px solid #58a6ff; border-radius: 20px; text-decoration: none; font-size: 0.9rem; transition: all 0.3s;">🚀 Missiles</a>
+                <a href="/shop?search=armor" style="padding: 8px 16px; background: rgba(88, 166, 255, 0.2); color: #58a6ff; border: 1px solid #58a6ff; border-radius: 20px; text-decoration: none; font-size: 0.9rem; transition: all 0.3s;">🛡️ Armor</a>
+            </div>
+        </section>
+
+        <!-- Search Results -->
+        {% if search_query %}
+            <section class="search-results" style="margin-bottom: 2rem;">
+                <h3 style="color: #2c3e50; margin-bottom: 1rem;">Search Results for "{{ search_query }}"</h3>
+                {% if search_results %}
+                    <div class="products-grid">
+                        {% for result in search_results %}
+                            <div class="product-card">
+                                <div class="product-header">
+                                    <h4 class="product-name">{{ result.product.name }}</h4>
+                                    <span class="product-price">${{ "{:,.2f}".format(result.product.price) }}</span>
+                                </div>
+                                <p class="category-name">Category: {{ result.category_name }}</p>
+                                <p class="product-description">{{ result.product.description }}</p>
+                                <div class="product-actions">
+                                    {% if session.customer_logged_in %}
+                                        <button onclick="openOrderModal('{{ result.product.id }}', '{{ result.product.name }}', {{ result.product.price }})" class="btn-order">
+                                            Order Now
+                                        </button>
+                                    {% else %}
+                                        <p style="color: #666; font-style: italic;">Please <a href="/customer/login" style="color: #3498db;">login</a> to order</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <p style="color: #666; text-align: center; font-style: italic;">No products found matching your search.</p>
+                {% endif %}
+            </section>
+        {% endif %}
+
+        <section class="hero">
+            <div class="hero-content">
+                <h2>Premier Military Equipment Supplier</h2>
+                <p>Discover our comprehensive collection of professional-grade military equipment, from precision firearms to advanced vehicle systems. Trusted by military professionals worldwide.</p>
+                <div class="hero-banner">
+                    <img src="{{ url_for('static', filename='logo.jpg') }}" alt="Iron Sight Armory Banner" class="banner-image">
+                </div>
+            </div>
+        </section>
+
+        <section class="categories-section">
+            <h3>Equipment Categories</h3>
+            <p class="categories-intro">Browse our specialized categories of military equipment and tactical gear</p>
+            
+            <div class="categories-grid">
+                {% for category_id, category in catalog.items() %}
+                    <div class="category-card">
+                        <div class="category-header">
+                            <h4>{{ category.name }}</h4>
+                            <div class="category-icon">
+                                {% if category_id == 'rifles' %}🔫
+                                {% elif category_id == 'smgs' %}🏹
+                                {% elif category_id == 'shotguns' %}💥
+                                {% elif category_id == 'snipers' %}🎯
+                                {% elif category_id == 'explosives' %}💣
+                                {% elif category_id == 'armor' %}🛡️
+                                {% elif category_id == 'attachments' %}🔧
+                                {% elif category_id == 'ground_vehicles' %}🚗
+                                {% elif category_id == 'air_vehicles' %}✈️
+                                {% elif category_id == 'water_vehicles' %}🚢
+                                {% elif category_id == 'anti_aircraft' %}🚀
+                                {% elif category_id == 'drones' %}🛩️
+                                {% elif category_id == 'missiles' %}🚀
+                                {% endif %}
+                            </div>
+                        </div>
+                        <p class="category-description">{{ category.description }}</p>
+                        <div class="category-stats">
+                            <span class="product-count">{{ category.products|length }} Products</span>
+                            <span class="price-range">
+                                ${{ "{:,.0f}".format(category.products|map(attribute='price')|min) }} - 
+                                ${{ "{:,.0f}".format(category.products|map(attribute='price')|max) }}
+                            </span>
+                        </div>
+                        <a href="{{ url_for('category_page', category_id=category_id) }}" class="btn-category">
+                            View Products
+                        </a>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="features-section">
+            <h3>Why Choose Iron Sight Armory?</h3>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h4>Professional Grade</h4>
+                    <p>Military specification equipment trusted by professionals worldwide</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h4>Secure Transactions</h4>
+                    <p>Encrypted ordering system with full order tracking capabilities</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎯</div>
+                    <h4>Expert Selection</h4>
+                    <p>Carefully curated equipment from top manufacturers globally</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📦</div>
+                    <h4>Fast Delivery</h4>
+                    <p>Rapid order processing and secure delivery worldwide</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Iron Sight Armory</h4>
+                    <p>Elite Military Equipment Supplier</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Categories</h4>
+                    <ul>
+                        <li><a href="{{ url_for('category_page', category_id='rifles') }}">Rifles</a></li>
+                        <li><a href="{{ url_for('category_page', category_id='armor') }}">Armor</a></li>
+                        <li><a href="{{ url_for('category_page', category_id='vehicles') }}">Vehicles</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Support</h4>
+                    <ul>
+                        <li><a href="#contact">Contact Us</a></li>
+                        <li><a href="#support">Technical Support</a></li>
+                        <li><a href="#warranty">Warranty</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Iron Sight Armory. Professional military equipment supplier.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

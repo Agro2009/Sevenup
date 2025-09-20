@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Management - Iron Sight Armory</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="{{ url_for('static', filename='logo_alt.png') }}" alt="Iron Sight Armory Logo" class="logo">
+                    <div class="brand-text">
+                        <h1>Iron Sight Armory</h1>
+                        <p class="tagline">Admin Order Management System</p>
+                    </div>
+                </div>
+                <nav class="header-nav">
+                    <a href="{{ url_for('admin_dashboard') }}" class="nav-link">← Dashboard</a>
+                    <a href="{{ url_for('index') }}" class="nav-link">Shop</a>
+                    <a href="{{ url_for('manage_vacancy') }}" class="nav-link">Vacancy</a>
+                    <a href="/admin/logout" class="nav-link">Logout</a>
+                    <a href="https://discord.gg/6wpgXJAkcv" target="_blank" class="nav-link" style="background: #7289da; border-color: #7289da;">💬 Discord</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Vacancy Advertisement -->
+        {% if vacancy_settings.enabled %}
+        <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 15px; text-align: center; border-radius: 8px; margin-bottom: 2rem; box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);">
+            <h3 style="margin: 0; font-size: 1.2rem;">{{ vacancy_settings.title }}</h3>
+            <p style="margin: 5px 0; font-size: 1rem;">{{ vacancy_settings.description }}: <strong>{{ vacancy_settings.contact_info }}</strong></p>
+            {% if vacancy_settings.image_url %}
+            <img src="{{ vacancy_settings.image_url }}" alt="Vacancy" style="max-width: 200px; border-radius: 10px; margin-top: 10px;">
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <section class="orders-section">
+            <div class="section-header">
+                <h2>📋 Order Management</h2>
+                <div class="admin-actions">
+                    <button onclick="location.reload()" class="btn-refresh">🔄 Refresh</button>
+                    <input type="text" id="order-search" placeholder="Search orders..." style="padding: 8px 12px; border: 2px solid #ddd; border-radius: 6px; margin-left: 10px;">
+                </div>
+            </div>
+
+            <!-- Orders Summary -->
+            {% set pending_count = orders|selectattr('status', 'equalto', 'pending')|list|length %}
+            {% set confirmed_count = orders|selectattr('status', 'equalto', 'confirmed')|list|length %}
+            {% set denied_count = orders|selectattr('status', 'equalto', 'denied')|list|length %}
+
+            <div class="orders-summary">
+                <h3>📊 Orders Summary</h3>
+                <div class="summary-stats">
+                    <div class="stat">
+                        <span class="stat-number">{{ orders|length }}</span>
+                        <span class="stat-label">Total Orders</span>
+                    </div>
+                    <div class="stat stat-pending">
+                        <span class="stat-number">{{ pending_count }}</span>
+                        <span class="stat-label">Pending</span>
+                    </div>
+                    <div class="stat stat-confirmed">
+                        <span class="stat-number">{{ confirmed_count }}</span>
+                        <span class="stat-label">Confirmed</span>
+                    </div>
+                    <div class="stat stat-denied">
+                        <span class="stat-number">{{ denied_count }}</span>
+                        <span class="stat-label">Denied</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Orders Table -->
+            {% if orders %}
+            <div class="orders-table-container">
+                <table class="orders-table" id="orders-table">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Customer</th>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr class="order-row">
+                            <td class="order-id">#{{ order.id }}</td>
+                            <td class="customer-name">
+                                <strong>{{ order.customer_roleplay_is }}</strong><br>
+                                <small style="color: #666;">{{ order.customer_discord_id }}</small>
+                            </td>
+                            <td class="product-name">{{ order.product_name }}</td>
+                            <td class="category-name">{{ order.category }}</td>
+                            <td class="quantity">{{ order.quantity }}</td>
+                            <td class="total">${{ "{:,.2f}".format(order.total) }}</td>
+                            <td>
+                                <span class="status-badge status-{{ order.status }}">
+                                    {{ order.status.upper() }}
+                                </span>
+                            </td>
+                            <td class="timestamp">{{ order.timestamp }}</td>
+                            <td>
+                                {% if order.status == 'pending' %}
+                                    <form method="POST" action="{{ url_for('confirm_order', order_id=order.id) }}" style="display: inline;">
+                                        <button type="submit" class="btn-confirm">✅ Confirm</button>
+                                    </form>
+                                    <form method="POST" action="{{ url_for('deny_order', order_id=order.id) }}" style="display: inline;">
+                                        <button type="submit" class="btn-deny">❌ Deny</button>
+                                    </form>
+                                {% else %}
+                                    <span class="action-completed">
+                                        {% if order.status == 'confirmed' %}✅ Confirmed{% else %}❌ Denied{% endif %}
+                                    </span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📋</div>
+                <h3>No Orders Yet</h3>
+                <p>Orders will appear here when customers start placing them.</p>
+                <a href="{{ url_for('index') }}" class="btn-primary">Visit Shop</a>
+            </div>
+            {% endif %}
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Iron Sight Armory</h4>
+                    <p>Elite Military Equipment Supplier</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Admin Panel</h4>
+                    <ul>
+                        <li><a href="{{ url_for('admin_dashboard') }}">Dashboard</a></li>
+                        <li><a href="{{ url_for('manage_vacancy') }}">Manage Vacancy</a></li>
+                        <li><a href="https://discord.gg/6wpgXJAkcv" target="_blank">Discord Support</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Iron Sight Armory. Admin order management system.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Search functionality for orders
+        document.getElementById('order-search').addEventListener('keyup', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('.order-row');
+            
+            rows.forEach(row => {
+                const text = row.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // Auto-refresh every 30 seconds
+        setInterval(function() {
+            location.reload();
+        }, 30000);
+    </script>
+</body>
+</html>

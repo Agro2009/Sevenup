@@ -1,0 +1,98 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Iron Sight Armory</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="{{ url_for('static', filename='logo_alt.png') }}" alt="Iron Sight Armory Logo" class="logo">
+                    <div class="brand-text">
+                        <h1>Iron Sight Armory</h1>
+                        <p class="tagline">Elite Military Equipment & Tactical Solutions</p>
+                    </div>
+                </div>
+                <nav class="header-nav">
+                    <a href="{{ url_for('welcome') }}" class="nav-link">← Back to Home</a>
+                    <a href="{{ url_for('index') }}" class="nav-link">Shop</a>
+                    <a href="https://discord.gg/6wpgXJAkcv" target="_blank" class="nav-link" style="background: #7289da; border-color: #7289da;">💬 Discord</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Vacancy Advertisement -->
+        {% if vacancy_settings and vacancy_settings.enabled %}
+        <div style="background: linear-gradient(135deg, #da3633, #f85149); color: white; padding: 20px; text-align: center; border-radius: 12px; margin-bottom: 2rem; box-shadow: 0 8px 25px rgba(218, 54, 51, 0.4); border: 1px solid #ff7b72;">
+            <h3 style="margin: 0; font-size: 1.3rem; font-weight: 700;">{{ vacancy_settings.title }}</h3>
+            <p style="margin: 8px 0; font-size: 1.1rem; font-weight: 500;">{{ vacancy_settings.description }}: <strong>{{ vacancy_settings.contact_info }}</strong></p>
+            {% if vacancy_settings.image_url %}
+            <img src="{{ vacancy_settings.image_url }}" alt="Vacancy" style="max-width: 200px; border-radius: 12px; margin-top: 12px; box-shadow: 0 8px 20px rgba(0,0,0,0.4);">
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <section class="login-section">
+            <div class="login-container">
+                <div class="login-header">
+                    <h2>🔐 Admin Access</h2>
+                    <p>Enter your credentials to access the admin panel</p>
+                </div>
+                
+                <form action="/admin/login" method="POST" class="login-form">
+                    <div class="form-group">
+                        <label for="username">Username:</label>
+                        <input type="text" id="username" name="username" required autocomplete="username" placeholder="Enter your username">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required autocomplete="current-password" placeholder="Enter your password">
+                    </div>
+
+                    <button type="submit" class="btn-login">Login to Admin Panel</button>
+                </form>
+
+                <div class="login-info">
+                    <p><strong>Need Help?</strong></p>
+                    <p>Contact technical support for login assistance</p>
+                    <hr style="margin: 1rem 0; border: none; height: 1px; background: #30363d;">
+                    <p><strong>Technical Support:</strong></p>
+                    <p><a href="https://discord.gg/6wpgXJAkcv" style="color: #58a6ff; text-decoration: none;">Join our Discord Server</a></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Iron Sight Armory</h4>
+                    <p>Elite Military Equipment Supplier</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Iron Sight Armory. Secure admin access portal.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

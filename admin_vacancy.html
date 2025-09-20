@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Vacancy - Iron Sight Armory</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="{{ url_for('static', filename='logo_alt.png') }}" alt="Iron Sight Armory Logo" class="logo">
+                    <div class="brand-text">
+                        <h1>Iron Sight Armory</h1>
+                        <p class="tagline">Vacancy Management</p>
+                    </div>
+                </div>
+                <nav class="header-nav">
+                    <a href="{{ url_for('admin_dashboard') }}" class="nav-link">← Back to Dashboard</a>
+                    <a href="{{ url_for('view_orders') }}" class="nav-link">Orders</a>
+                    <a href="{{ url_for('admin_logout') }}" class="nav-link">Logout</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <section class="vacancy-management">
+            <div style="background: linear-gradient(135deg, #fff, #f8f9fa); padding: 2rem; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); margin-bottom: 2rem;">
+                <h2 style="color: #2c3e50; margin-bottom: 2rem; font-size: 2rem; text-align: center;">📢 Manage Vacancy Advertisement</h2>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start;">
+                    <!-- Form Section -->
+                    <div>
+                        <form action="{{ url_for('manage_vacancy') }}" method="POST" style="background: white; padding: 2rem; border-radius: 10px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);">
+                            <div class="form-group">
+                                <label for="enabled" style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                    <input type="checkbox" id="enabled" name="enabled" {% if vacancy_settings.enabled %}checked{% endif %} style="transform: scale(1.2);">
+                                    <strong>Enable Vacancy Advertisement</strong>
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="title">Advertisement Title:</label>
+                                <input type="text" id="title" name="title" value="{{ vacancy_settings.title }}" required 
+                                       placeholder="e.g., 🎯 WANT TO APPLY FOR A POSITION?"
+                                       style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="description">Description:</label>
+                                <input type="text" id="description" name="description" value="{{ vacancy_settings.description }}" required 
+                                       placeholder="e.g., Contact Owner"
+                                       style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="contact_info">Contact Information:</label>
+                                <input type="text" id="contact_info" name="contact_info" value="{{ vacancy_settings.contact_info }}" required 
+                                       placeholder="e.g., https://discord.gg/6wpgXJAkcv"
+                                       style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="image_url">Image URL (optional):</label>
+                                <input type="url" id="image_url" name="image_url" value="{{ vacancy_settings.image_url }}" 
+                                       placeholder="https://example.com/image.jpg"
+                                       style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 1rem;">
+                                <small style="color: #666; display: block; margin-top: 5px;">
+                                    You can upload images to services like Imgur, Discord, or use direct image URLs
+                                </small>
+                            </div>
+
+                            <button type="submit" class="btn-primary" style="width: 100%; padding: 15px; font-size: 1.1rem; margin-top: 1rem;">
+                                💾 Update Vacancy Settings
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Preview Section -->
+                    <div>
+                        <h3 style="color: #2c3e50; margin-bottom: 1rem;">📋 Live Preview</h3>
+                        
+                        <div id="vacancy-preview" style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 15px; text-align: center; border-radius: 15px; box-shadow: 0 10px 30px rgba(231, 76, 60, 0.3);">
+                            <h3 style="margin: 0; font-size: 1.2rem;" id="preview-title">{{ vacancy_settings.title }}</h3>
+                            <p style="margin: 10px 0; font-size: 1rem;" id="preview-description">
+                                <span id="preview-desc-text">{{ vacancy_settings.description }}</span>: 
+                                <strong id="preview-contact">{{ vacancy_settings.contact_info }}</strong>
+                            </p>
+                            {% if vacancy_settings.image_url %}
+                            <img id="preview-image" src="{{ vacancy_settings.image_url }}" alt="Vacancy" style="max-width: 200px; border-radius: 10px; margin-top: 10px; display: block; margin-left: auto; margin-right: auto;">
+                            {% else %}
+                            <img id="preview-image" src="" alt="Vacancy" style="max-width: 200px; border-radius: 10px; margin-top: 10px; display: none; margin-left: auto; margin-right: auto;">
+                            {% endif %}
+                        </div>
+
+                        <div style="margin-top: 2rem; padding: 1rem; background: #f8f9fa; border-radius: 10px;">
+                            <h4 style="color: #2c3e50; margin-bottom: 1rem;">📊 Current Status</h4>
+                            <p><strong>Status:</strong> 
+                                <span style="color: {% if vacancy_settings.enabled %}#27ae60{% else %}#e74c3c{% endif %};">
+                                    {% if vacancy_settings.enabled %}✅ Active{% else %}❌ Disabled{% endif %}
+                                </span>
+                            </p>
+                            <p><strong>Displays on:</strong> Welcome page, Shop page, Admin login page</p>
+                        </div>
+
+                        <div style="margin-top: 2rem;">
+                            <h4 style="color: #2c3e50; margin-bottom: 1rem;">💡 Tips</h4>
+                            <ul style="color: #666; line-height: 1.6;">
+                                <li>Use emojis in the title to make it more attractive</li>
+                                <li>Keep the description short and clear</li>
+                                <li>Include your Discord invite link for easy contact</li>
+                                <li>Use high-quality images (PNG/JPG) for best results</li>
+                                <li>Images should be under 500px wide for optimal display</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="discord-section" style="text-align: center; margin-top: 3rem;">
+            <a href="https://discord.gg/6wpgXJAkcv" target="_blank" style="display: inline-flex; align-items: center; gap: 10px; background: #7289da; color: white; padding: 15px 25px; border-radius: 50px; text-decoration: none; font-weight: 600; box-shadow: 0 10px 30px rgba(114, 137, 218, 0.3); transition: all 0.3s ease;">
+                <span style="font-size: 1.5rem;">💬</span>
+                <span>Need Help? Join Discord</span>
+            </a>
+        </div>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Iron Sight Armory</h4>
+                    <p>Elite Military Equipment Supplier</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Iron Sight Armory. Vacancy Management.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Live preview functionality
+        function updatePreview() {
+            const title = document.getElementById('title').value || 'Preview Title';
+            const description = document.getElementById('description').value || 'Preview Description';
+            const contact = document.getElementById('contact_info').value || 'Contact Info';
+            const imageUrl = document.getElementById('image_url').value;
+
+            document.getElementById('preview-title').textContent = title;
+            document.getElementById('preview-desc-text').textContent = description;
+            document.getElementById('preview-contact').textContent = contact;
+
+            const previewImage = document.getElementById('preview-image');
+            if (imageUrl) {
+                previewImage.src = imageUrl;
+                previewImage.style.display = 'block';
+            } else {
+                previewImage.style.display = 'none';
+            }
+        }
+
+        // Add event listeners for live preview
+        document.getElementById('title').addEventListener('input', updatePreview);
+        document.getElementById('description').addEventListener('input', updatePreview);
+        document.getElementById('contact_info').addEventListener('input', updatePreview);
+        document.getElementById('image_url').addEventListener('input', updatePreview);
+    </script>
+</body>
+</html>

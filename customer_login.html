@@ -1,0 +1,93 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Login - Iron Sight Armory</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-section">
+                    <img src="{{ url_for('static', filename='logo_alt.png') }}" alt="Iron Sight Armory Logo" class="logo">
+                    <div class="brand-text">
+                        <h1>Iron Sight Armory</h1>
+                        <p class="tagline">Elite Military Equipment & Tactical Solutions</p>
+                    </div>
+                </div>
+                <nav class="header-nav">
+                    <a href="{{ url_for('index') }}" class="nav-link">← Back to Home</a>
+                    <a href="{{ url_for('customer_register') }}" class="nav-link">Create Account</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Vacant Ad Banner -->
+        <div style="background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; padding: 15px; text-align: center; border-radius: 8px; margin-bottom: 2rem; box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);">
+            <h3 style="margin: 0; font-size: 1.2rem;">🎯 WANT TO APPLY FOR A POSITION?</h3>
+            <p style="margin: 5px 0; font-size: 1rem;">Contact Owner: <strong>https://discord.gg/6wpgXJAkcv</strong></p>
+        </div>
+
+        <section class="login-section">
+            <div class="login-container">
+                <div class="login-header">
+                    <h2>🎮 Customer Login</h2>
+                    <p>Access your account to place orders</p>
+                </div>
+                
+                <form action="/customer/login" method="POST" class="login-form">
+                    <div class="form-group">
+                        <label for="discord_id">Discord ID:</label>
+                        <input type="text" id="discord_id" name="discord_id" required 
+                               placeholder="YourDiscordUsername#1234" autocomplete="username">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="password" id="password" name="password" required 
+                               autocomplete="current-password">
+                    </div>
+
+                    <button type="submit" class="btn-login">Login</button>
+                </form>
+
+                <div class="login-info">
+                    <p>Don't have an account? <a href="{{ url_for('customer_register') }}" style="color: #3498db;">Create one here</a></p>
+                    <hr style="margin: 1rem 0; border: none; height: 1px; background: #ddd;">
+                    <p><strong>Contact & Technical Support:</strong></p>
+                    <p><a href="https://discord.gg/6wpgXJAkcv" style="color: #7289da;">https://discord.gg/6wpgXJAkcv</a></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Iron Sight Armory</h4>
+                    <p>Elite Military Equipment Supplier</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 Iron Sight Armory. Customer login portal.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
